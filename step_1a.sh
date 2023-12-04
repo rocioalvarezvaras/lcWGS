@@ -1,6 +1,6 @@
 #!/bin/bash
-# --------------- Script SBATCH - NLHPC ----------------
-#SBATCH -J FastQC
+#---------------Script SBATCH - NLHPC ----------------
+#SBATCH -J FastQC 
 #SBATCH -p slims
 #SBATCH -n 1
 #SBATCH -c 1
@@ -11,11 +11,9 @@
 #SBATCH -o FastQC_%j.out
 #SBATCH -e FastQC_%j.err
 
-GEN=/home/fleon/tortu-genomes
+GEN=/home/fleon/tortu-genomes 
 
-# Activar entorno virtual
 source $HOME/miniconda3/bin/activate
-conda activate assembly
+source activate assembly
 
-# Ejecutar FastQC
-fastqc --outdir=$GEN --threads=1 --format=fastq $GEN/*.gz
+fastqc –o $GEN/ –t 1 –f fastq $GEN/*.gz
