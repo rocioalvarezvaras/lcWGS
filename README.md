@@ -4,21 +4,43 @@
 
 # UPSTREAM ANALYSIS
 
-# Step 1a: QC raw reads-fastQC
+# Step 1a: Quality Control of Raw reads - fastQC
 
-- Input: fq.gz files
+FastQC performs a series of analyses, each represented by a module, to evaluate different aspects of data quality.
+This tool takes as input one or more sequence files in various formats, such as FASTQ or BAM. In this case, we are going to use a fastq file.
+- Input: fq.gz/fastq.gz files
 - Output: .html and .zip files per sample (forward and reverse, separately)
 
-_Execute script: step_1.sh_
+Since we have numerous samples, we will use a loop that will help us analyze all the samples with the following script:
 
-# Step 1b: QC raw reads-multiQC
+```bash
+cat list.txt | while read a
+do
+  fastqc –o $GEN/${a} –t 1 –f fastq $GEN/${a}.gz
+done
+```
+Details:
+- The names of all the samples to be analyzed must be in the list.txt
+- -o: the name that the output .html and .zip files will have
+- -t: number of threads (cpu) to use to perform the analysis
+- -f: to indicate that the input has fastq format, then you have provide the file path 
 
-- Input: .html files all samples (forward and reverse, separately)
+  
+# Step 1b: Quality Control of Raw reads - multiQC
+MultiQC is designed to aggregate and summarize results from multiple analysis tools, including FastQC, into a single, easy-to-read report.
+To run multiqc we must be in the folder where our fastq files are located.
+- Input: .fastqc files from all samples (forward and reverse, separately)
 - Output: one .html file (all samples together)
 
-_Execute multiqc:  multiqc ._
+Command:
+``` bash
+multiqc .
 
-# Step 2: Trimming raw reads-trimmomatic
+```
+Details:
+- By placing the '.' we are indicating that our input corresponds to all the fastqc files that are in our current directory
+
+# Step 2: Trimming Raw reads - trimmomatic
 
 - Input: fq.gz files
 - Output: four files per sample, two unpaired (U) and two paired (P)
