@@ -1,19 +1,16 @@
 #!/bin/bash
-#---------------Script SBATCH - NLHPC ----------------
 #SBATCH -J FastQC 
-#SBATCH -p slims
+#SBATCH -p partition
 #SBATCH -n 1
 #SBATCH -c 1
 #SBATCH --mem-per-cpu=2300
 #SBATCH --mail-user=email
 #SBATCH --mail-type=ALL
-#SBATCH -t 24:2:5
 #SBATCH -o FastQC_%j.out
-#SBATCH -e FastQC_%j.err
-
-GEN=/home/fleon/tortu-genomes 
-
+#-----Set relative path--------------------
+GEN=/path/to/directory 
+#-----Activate fastqc conda environment-----
 source $HOME/miniconda3/bin/activate
-source activate assembly
-
+activate assembly
+#-----Command-------------------------------
 fastqc –o $GEN/ –t 1 –f fastq $GEN/*.gz
