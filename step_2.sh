@@ -1,5 +1,5 @@
 #!/bin/bash
-# --------------- Script SBATCH - NLHPC ----------------
+#---------------Script SBATCH - NLHPC ----------------
 #SBATCH -J Trimmomatic-rav
 #SBATCH -p slims
 #SBATCH -n 5
@@ -11,18 +11,18 @@
 #SBATCH -o Trimmomatic_%j.out
 #SBATCH -e Trimmomatic_%j.err
 
+
 GEN=/home/fleon/tortu-genomes
-TRIM=/home/fleon/tortu-genomes/trimmomatic_02
+TRIM=/home/fleon/tortu-genomes/trimommatic_02
 ADAPT=/home/fleon/Adapt
 
 source $HOME/miniconda3/bin/activate
-conda activate assembly
+source activate assembly
 
-while read a; do
-  trimmomatic PE -threads 5 -phred33 \
-    ${GEN}/${a}1.fq.gz \
-    ${GEN}/${a}2.fq.gz -baseout \
-    ${TRIM}/${a}.trimmed.fq ILLUMINACLIP:${ADAPT}/TruSeq2OV
-done < list.txt
+cat list.txt | while read a
+do
+trimmomatic PE -threads 5 -phred33 $GEN/${a}1.fq.gz $GEN/${a}2.fq.gz -baseout $TRIM/${a}.trimmed.fq ILLUMINACLIP:$ADAPT/TruSeq2OV$
+done
 
-# nohup ./trim_loop.sh > trimming_rav.log 2>&1 </dev/null &
+#El script se corre con nohup de la siguiente manera
+nohup ./trim_loop.sh > trimming_rav.log & 
