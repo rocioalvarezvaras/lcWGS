@@ -266,7 +266,7 @@ Details:
 - TAGGING_POLICY All: Specifies the tagging policy for duplicate reads. In this case, it's set to "All," which means all duplicate reads will be marked.
 - ASSUME_SORT_ORDER coordinate: Assumes that the input BAM file is sorted in coordinate order. It is important to correctly specify the sorting order to ensure accurate duplicate marking.
 
-### Clean the BAM files - Picard
+### 6b: Clean the BAM files - Picard
 The SamClean tool of Picard cleans the provided SAM/BAM files, soft-clipping beyond-end-of-reference alignments and setting MAPQ to 0 for unmapped reads.
 ```
 #------Set relative path--------------------
