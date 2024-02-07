@@ -1,10 +1,10 @@
-# lcWGS GREEN SEA TURTLE
+# lcWGS Pacific Green Sea Turtle
 
 ---
 
 # UPSTREAM ANALYSIS
 
-# Step 1a: Quality Control of Raw reads - fastQC
+# Step 1a: Quality control of raw reads - fastQC
 
 FastQC performs a series of analyses, each represented by a module, to evaluate different aspects of data quality.
 This tool takes as input one or more sequence files in various formats, such as FASTQ or BAM. In this case, we are going to use a fastq file.
@@ -13,6 +13,7 @@ This tool takes as input one or more sequence files in various formats, such as 
 
 Since we have numerous samples, we used a loop that will help us analyze all the samples with the following script:
 
+Script:
 ```bash
 #------Set relative path--------------------
 RAW=/home/ralvarezv/raw_reads #Directory where raw reads are located
@@ -23,14 +24,15 @@ do
 done
 ```
 Details:
-- The names of all the samples to be analyzed must be in the list.txt
-- -o: the name that the output .html and .zip files will have
+- Names of all the samples (prefix) to be analyzed must be in the list.txt
+- -o: the name that the output (.html and .zip files) will have
 - -t: number of threads (cpu) to use to perform the analysis
 - -f: to indicate that the input has fastq format, then you have provide the file path 
 
   
-# Step 1b: Quality Control of Raw reads - multiQC
-MultiQC is designed to aggregate and summarize results from multiple analysis tools, including FastQC, into a single, easy-to-read report.
+# Step 1b: Quality control of raw reads - multiQC
+
+MultiQC was designed to aggregate and summarize results from multiple analysis tools (including FastQC) into a single, easy-to-read report.
 To run multiqc we must be in the folder where our fastq files are located.
 - Input: .fastqc files from all samples (forward and reverse, separately)
 - Output: one .html file (all samples together)
@@ -40,9 +42,10 @@ Command:
 multiqc .
 ```
 Details:
-- By placing the '.' we are indicating that our input corresponds to all the fastqc files that are in our current directory
+- By placing the '.' we are indicating that our input corresponds to all the fastqc files that are in our current directory.
 
-# Step 2: Trimming Raw reads - Trimmomatic
+# Step 2: Trimming raw reads - Trimmomatic
+
 We used Trimmomatic to trim quality, remove adapter sequences, and filter out low-quality reads from raw sequencing data.
 - Input: fq.gz files
 - Output: four files per sample, two unpaired (U) and two paired (P)
@@ -64,21 +67,21 @@ Details:
 - -baseout: the path and name of the output files
 - ILLUMINACLIP: the path to the adapters files
 - LEADING: any bases at the start of a read (5') with a quality score less than 3 will be trimmed off
-- TRAILING: Bases at the end of a read (3') with a quality score less than 3 will be trimmed off
+- TRAILING: bases at the end of a read (3') with a quality score less than 3 will be trimmed off
 - MINLEN: reads with a length below 36 bases will be removed from the dataset
 
-## Run fastQC and multiQC post-trimming using paired files to re-evaluate the content of adapters
+## Run fastQC and multiQC post-trimming using paired files to re-evaluate the content of adapters ##
 
-# Step 3: Separation of the mitogenome from the nuclear genome | BBsplit
-To separate the nuclear genome from the mitogenome we used BBSplit. 
-This tool is designed to separate sequencing reads into different bins based on the reference databases provided by the user.
+# Step 3: Split of the mitogenome from the nuclear genome - BBsplit
+
+BBsplit was designed to separate sequencing reads into different bins based on the reference databases provided by the user.
 
 Script:
 ``` bash
 #------Set relative path--------------------
-TRIM=/home/ralvarezv/trimmomatic_01 #Directory of the trimmed reads
-MITOREF=/home/ralvarezv/bbsplit_03 #Directory of the reference mitogenome
-SPLIT=/home/ralvarezv/bbsplit_03 #Output directory for split reads
+TRIM=/home/ralvarezv/trimmomatic_01 #Directory where trimmed reads are located
+MITOREF=/home/ralvarezv/bbsplit_03 #Directory where the reference mitogenome is located
+SPLIT=/home/ralvarezv/bbsplit_03 #Output directory for splitted reads
 #------Command------------------------------
 cat list.txt | while read a
 do
@@ -89,18 +92,19 @@ Details:
 - ref=$MITOREF: path to the reference mitogenome
 - in1= path to reads (forward)
 - in2= path to reads (reverse)
-- basename= path and name of the file with the mitogenome (output name)
+- basename= path and name of the file where mitogenome reads will be located (output name)
 - out1= path and name of the nuclear reads (forward)
 - out2= path and name of the nuclear reads (reverse)
 
-Move the the splited mitognomes and reference mitogenome to a new folder called "mitogen_03".
+Move the splitted mitogenomes and reference mitogenome to a new folder called "mitogen_03".
 
-# Step 4: Alignment against the reference genome | BWA  (Burrows-Wheeler Aligner)
+# Step 4: Mapping reads to the reference genome - BWA  (Burrows-Wheeler Aligner)
+
 BWA is a software package for mapping low-divergent sequences against a large reference genome.
 
-### Genome indexing
+### Step 4a: Genome indexing
 Before aligning the reads to the reference genome, it is necessary to index the reference genome. 
-The reference genome was used: GCF_015237465.2
+The reference genome used was: GCF_015237465.2
 
 Example command:
 `bwa index reference.fasta`
@@ -113,8 +117,8 @@ REF=/home/ralvarezv/reference #Reference genome directory
 bwa index -p $REF/cmydas_index $REF/GCF_015237465.2_rCheMyd1.pri.v2_genomic.fna
 ```
 Details:
-- p: Output database prefix
-- The results should be in the “reference” folder and must be 5 files:
+- p: output database prefix
+- Results should be located in the “reference” folder and they should be 5 files:
     - cmydas_index.amb
     - cmydas_index.ann
     - cmydas_index.bwt
@@ -123,7 +127,7 @@ Details:
   
 These files should be moved to a new folder called "bwa_04".
 
-### Genome aligment
+### Step 4b: Genome aligment
 To align our reads against the reference genome we used bwa mem.
 It is the primary and most commonly used algorithm in BWA for aligning high-quality sequencing reads, particularly from next-generation sequencing (NGS) platforms like Illumina.
 
@@ -139,18 +143,18 @@ SPLIT=/home/ralvarezv/bbsplit_03
 cat list.txt | while read a
 do
   bwa mem -t 22 -M -R @RG\tID:${a}\tLB:CKDL230023566\tPL:ILLUMINA\tPU:A00742\tSM:${a} \
-  $REF/cmydas_index $split/${a}_nomt_R1.fq $SPLIT/${a}_nomt_R2.fq > $OUT/${a}.algn.sam
+  $REF/cmydas_index $split/${a}_nomt_R1.fq $SPLIT/${a}_nomt_R2.fq > $OUT/${a}.align.sam
 done
 ```
 Details:
 - -t 22: we used 22 threads to run this process
-- -M: Mark shorter splits as secondary (for Picard compatibility)
-- -R: Complete with sample names, library IDs, platform IDs and sample IDs. They all came from the same bookstore, platform, etc. The only thing that varied was the name of the sample
+- -M: mark shorter splits as secondary (for Picard compatibility)
+- -R: complete with sample names, library IDs, platform IDs and sample IDs. They all came from the same bookstore, platform, etc. The only thing that varied was the name of the sample
 
 # Step 5: Samtools
 Samtools provides a set of utilities that allow users to manipulate and analyze data in SAM (Sequence Alignment/Map) and BAM (Binary Alignment/Map) formats.
 
-### 5.1: Convert .sam to .bam
+### 5a: Convert .sam to .bam
 The samtools view command converts between SAM and BAM formats. 
 SAM is a human-readable text format, while BAM is a binary version that is more compact and faster to process.
 
