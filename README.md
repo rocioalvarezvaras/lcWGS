@@ -126,7 +126,7 @@ Details:
   
 These files should be moved to a new folder called "bwa_04".
 
-### Step 4b: Genome aligment
+### Step 4b: Genome alignment
 To align our reads against the reference genome we used bwa mem.
 It is the primary and most commonly used algorithm in BWA for aligning high-quality sequencing reads, particularly from next-generation sequencing (NGS) platforms like Illumina.
 
