@@ -53,8 +53,8 @@ We used Trimmomatic to trim quality, remove adapter sequences, and filter out lo
 Script:
 ``` bash
 #------Set relative path--------------------
-RAW=                                  #Directory where raw data is located (input)
-TRIM=/home/ralvarezv/trimmomatic_02/  #Directory where trimmed reads will be located (output)
+RAW=/home/ralvarezv/raw_reads  #Directory where raw data is located (input)
+TRIM=/home/ralvarezv/trimmomatic_02  #Directory where trimmed reads will be located (output)
 ADAPT=/home/ralvarezv/adapters  #Directory where the adapters are located
 #------Command------------------------------
 cat list.txt | while read a
@@ -142,7 +142,7 @@ SPLIT=/home/ralvarezv/bbsplit_03  #Directory where nuclear reads are located (in
 cat list.txt | while read a
 do
   bwa mem -t 22 -M -R @RG\tID:${a}\tLB:CKDL230023566\tPL:ILLUMINA\tPU:A00742\tSM:${a} \
-  $REF/cmydas_index $SPLIT/${a}_nomt_R1.fq $SPLIT/${a}_nomt_R2.fq > $OUT/${a}.algn.sam
+  $REF/cmydas_index $SPLIT/${a}_nomt_R1.fq $SPLIT/${a}_nomt_R2.fq > $OUT/${a}.align.sam
 done
 ```
 Details:
@@ -164,7 +164,7 @@ SAM=/home/ralvarezv/genome_aligned  #Directory where the sam files are located (
 #------Command------------------------------
 cat list.txt | while read a
 do
-  samtools view -q 10 -f 0x2 -bSh -@ 5 $SAM/${a}.algn.sam > $BAM/${a}.algn.bam
+  samtools view -q 10 -f 0x2 -bSh -@ 5 $SAM/${a}.align.sam > $BAM/${a}.align.bam
 done
 ```
 Details:
@@ -188,7 +188,7 @@ METDIR=/home/ralvarezv/genome_aligned/metrics  #Directory where the metric data 
 #------Command------------------------------
 cat list.txt | while read a
 do
-   samtools flagstat $BAM/${a}_}.algn.bam > $METDIR/${a}_stats.txt
+   samtools flagstat $BAM/${a}_}.align.bam > $METDIR/${a}_stats.txt
 done
 ```
 Details: This is an example about what we can observe in the stats.txt file for a sample:
@@ -220,7 +220,7 @@ BAM=/home/ralvarezv/genome_aligned/metrics   #Directory where the bam files are 
 #------Command------------------------------
 cat list.txt | while read a
 do
-  samtools sort -o $SORT/${a}.algn.sort.bam -@ 5 $BAM/${a}.algn.bam
+  samtools sort -o $SORT/${a}.align.sort.bam -@ 5 $BAM/${a}.align.bam
 done
 ```
 Details:
@@ -254,7 +254,7 @@ DEDUP=/home/ralvarezv/genome_aligned/deduplicated   #Directory where the bam out
 cat list.txt | while read a
 do
   java -jar picard.jar MarkDuplicates \
-  -I $SORT/${a}.algn.sort.bam -O $DEDUP/${a}.dedup.bam -METRICS_FILE $DEDUP/dedup.metrics.txt \
+  -I $SORT/${a}.align.sort.bam -O $DEDUP/${a}.dedup.bam -METRICS_FILE $DEDUP/dedup.metrics.txt \
   -VALIDATION_STRINGENCY LENIENT -CREATE_INDEX true -CREATE_MD5_FILE true -TAGGING_POLICY All -ASSUME_SORT_ORDER coordinate
 done
 ```
