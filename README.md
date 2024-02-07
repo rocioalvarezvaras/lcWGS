@@ -16,7 +16,7 @@ Since we have numerous samples, we used a loop that will help us analyze all the
 Script:
 ```bash
 #------Set relative path--------------------
-RAW=/home/ralvarezv/raw_reads #Directory where raw reads are located
+RAW=/home/ralvarezv/raw_reads  #Directory where raw reads are located
 #------Command------------------------------
 cat list.txt | while read a
 do
@@ -29,7 +29,6 @@ Details:
 - -t: number of threads (cpu) to use to perform the analysis
 - -f: to indicate that the input has fastq format, then you have provide the file path 
 
-  
 # Step 1b: Quality control of raw reads - multiQC
 
 MultiQC was designed to aggregate and summarize results from multiple analysis tools (including FastQC) into a single, easy-to-read report.
@@ -54,8 +53,9 @@ We used Trimmomatic to trim quality, remove adapter sequences, and filter out lo
 Script:
 ``` bash
 #------Set relative path--------------------
-TRIM=/home/ralvarezv/trimmomatic_02/ #Directory where we will put the trimmed reads
-ADAPT=/home/ralvarezv/adapters #Directory where the adapters are located
+RAW=                                  #Directory where raw data is located (input)
+TRIM=/home/ralvarezv/trimmomatic_02/  #Directory where trimmed reads will be located (output)
+ADAPT=/home/ralvarezv/adapters  #Directory where the adapters are located
 #------Command------------------------------
 cat list.txt | while read a
 do
@@ -79,9 +79,9 @@ BBsplit was designed to separate sequencing reads into different bins based on t
 Script:
 ``` bash
 #------Set relative path--------------------
-TRIM=/home/ralvarezv/trimmomatic_01 #Directory where trimmed reads are located
-MITOREF=/home/ralvarezv/bbsplit_03 #Directory where the reference mitogenome is located
-SPLIT=/home/ralvarezv/bbsplit_03 #Output directory for splitted reads
+TRIM=/home/ralvarezv/trimmomatic_01  #Directory where trimmed reads are located (input)
+MITOREF=/home/ralvarezv/bbsplit_03  #Directory where the reference mitogenome is located
+SPLIT=/home/ralvarezv/bbsplit_03  #Directory where splitted reads will be located (output)
 #------Command------------------------------
 cat list.txt | while read a
 do
@@ -89,7 +89,6 @@ do
 done
 ```
 Details:
-- ref=$MITOREF: path to the reference mitogenome
 - in1= path to reads (forward)
 - in2= path to reads (reverse)
 - basename= path and name of the file where mitogenome reads will be located (output name)
@@ -98,7 +97,7 @@ Details:
 
 Move the splitted mitogenomes and reference mitogenome to a new folder called "mitogen_03".
 
-# Step 4: Mapping reads to the reference genome - BWA  (Burrows-Wheeler Aligner)
+# Step 4: Map reads to the reference genome - BWA  (Burrows-Wheeler Aligner)
 
 BWA is a software package for mapping low-divergent sequences against a large reference genome.
 
@@ -112,7 +111,7 @@ Example command:
 Script:
 ```
 #------Set relative path--------------------
-REF=/home/ralvarezv/reference #Reference genome directory
+REF=/home/ralvarezv/reference  #Directory where reference genome is located (input)
 #------Command------------------------------
 bwa index -p $REF/cmydas_index $REF/GCF_015237465.2_rCheMyd1.pri.v2_genomic.fna
 ```
@@ -136,14 +135,14 @@ Here is a basic example of how to use bwa mem: `bwa mem reference.fasta reads.fq
 Script:
 ```
 #------Set relative path--------------------
-REF=/home/ralvarezv/bwa_04
-OUT=/home/ralvarezv/genome_aligned
-SPLIT=/home/ralvarezv/bbsplit_03
+REF=/home/ralvarezv/bwa_04  #Directory where reference/indexed genome is located
+OUT=/home/ralvarezv/genome_aligned  #Directory where output files will be located (output)
+SPLIT=/home/ralvarezv/bbsplit_03  #Directory where nuclear reads are located (input)
 #------Command------------------------------
 cat list.txt | while read a
 do
   bwa mem -t 22 -M -R @RG\tID:${a}\tLB:CKDL230023566\tPL:ILLUMINA\tPU:A00742\tSM:${a} \
-  $REF/cmydas_index $split/${a}_nomt_R1.fq $SPLIT/${a}_nomt_R2.fq > $OUT/${a}.align.sam
+  $REF/cmydas_index $SPLIT/${a}_nomt_R1.fq $SPLIT/${a}_nomt_R2.fq > $OUT/${a}.algn.sam
 done
 ```
 Details:
@@ -161,7 +160,7 @@ SAM is a human-readable text format, while BAM is a binary version that is more 
 Script:
 ```
 #------Set relative path--------------------
-SAM=/home/ralvarezv/genome_aligned  #Directory of the .sam files
+SAM=/home/ralvarezv/genome_aligned  #Directory where the sam files are located (input)
 #------Command------------------------------
 cat list.txt | while read a
 do
@@ -173,10 +172,10 @@ Details:
 - -f 0x2: FLAG, only generates alignments with all the bits configured in FLAG and checks the list of FLAGS.
           0x2: Proper pair, each segment aligns properly with its pair.
 - -b: output is delivered in .sam format
-- -S: Automatically detect input
+- -S: automatically detect input
 - -h: include the header in the output
 
-### 5.2: Watch statistics
+### 5b: Check statistics
 The samtools flagstat command is used to generate simple statistics from a BAM file. 
 These statistics provide information about the number and types of reads in the alignment file based on their alignment flags. 
 The output includes details about how many reads are properly paired, how many are singletons, and various other categories.
@@ -184,15 +183,15 @@ The output includes details about how many reads are properly paired, how many a
 Script:
 ```
 #------Set relative path--------------------
-SAM=/home/ralvarezv/genome_aligned   #Directory of the input data
-METDIR=/home/ralvarezv/genome_aligned/metrics   #Directory of the output data 
+BAM=/home/ralvarezv/genome_aligned  #Directory where the bam files are located (input)
+METDIR=/home/ralvarezv/genome_aligned/metrics  #Directory where the metric data will be located (output)
 #------Command------------------------------
 cat list.txt | while read a
 do
    samtools flagstat $BAM/${a}_}.algn.bam > $METDIR/${a}_stats.txt
 done
 ```
-Details: This is an example of what we can see in the stats.txt file of a sample:
+Details: This is an example about what we can observe in the stats.txt file for a sample:
   ```
   25781849 + 0 in total (QC-passed reads + QC-failed reads)
   22603 + 0 secondary
@@ -209,26 +208,26 @@ Details: This is an example of what we can see in the stats.txt file of a sample
   0 + 0 with mate mapped to a different chr (mapQ>=5)
   ```
 
-### 5.3: Sort by genome coordinates
-The samtools sort command is used to sort a BAM file by genomic coordinates. 
+### 5c: Sort according to genome coordinates
+The samtools sort command is used to sort a BAM file according to genomic coordinates. 
 Sorting is a necessary step before many downstream analyses, as it allows for efficient and ordered access to the aligned reads.
 
 Script:
 ```
 #------Set relative path--------------------
-SORT=/home/ralvarezv/genome_aligned/sorted   #Directory of the bam sorted data
-BAM=/home/ralvarezv/genome_aligned/metrics   #Directory of the bam input data 
+SORT=/home/ralvarezv/genome_aligned/sorted   #Directory where the bam sorted files will be located (output)
+BAM=/home/ralvarezv/genome_aligned/metrics   #Directory where the bam files are located (input)
 #------Command------------------------------
 cat list.txt | while read a
 do
-  samtools sort -o $SORTBAM/${a}.algn.sort.bam -@ 5 $BAM/${a}.algn.bam
+  samtools sort -o $SORT/${a}.algn.sort.bam -@ 5 $BAM/${a}.algn.bam
 done
 ```
 Details:
 - -o: leave the results in the sorted folder with this name
-- -@ 5: the number of cpu to use
+- -@ 5: number of cpu to use
 
-### 5.4: Indexing reference genome
+### 5d: Index reference genome
 The samtools faidx command is used to create an index for a FASTA-formatted reference genome. 
 This index allows for efficient retrieval of sequences from specific genomic regions, providing quick access to the underlying nucleotide information. 
 The index file created by samtools faidx has the extension ".fai."
@@ -238,9 +237,9 @@ Command:
 samtools faidx GCF_015237465.2_rCheMyd1.pri.v2_genomic.fna
 ```
 
-# Step 6: Cleaning bam files
+# Step 6: Clean bam files
 
-### Identify and mark duplicate reads in BAM files
+### 6a: Identify and mark duplicates - Picard
 Picard MarkDuplicates is a command from the Picard Tools suite, which is a collection of command-line tools for manipulating high-throughput sequencing data. 
 The MarkDuplicates tool is specifically designed to identify and mark duplicate reads in BAM files, that may have originated from the same original DNA fragment. 
 These duplicates can arise during library preparation or sequencing and may impact downstream analyses, particularly in variant calling or other applications where unique reads are essential.
@@ -249,8 +248,8 @@ The metrics file (metrics.txt) provides information about the number and types o
 Script:
 ```
 #------Set relative path--------------------
-SORT=/home/ralvarezv/genome_aligned/sorted   #Directory of the bam sorted data
-DEDUP=/home/ralvarezv/genome_aligned/deduplicated   #Directory of the bam output data 
+SORT=/home/ralvarezv/genome_aligned/sorted   #Directory where the bam sorted files are located (input)
+DEDUP=/home/ralvarezv/genome_aligned/deduplicated   #Directory where the bam output (deduplicated) files will be located (output)
 #------Command------------------------------
 cat list.txt | while read a
 do
@@ -267,12 +266,12 @@ Details:
 - TAGGING_POLICY All: Specifies the tagging policy for duplicate reads. In this case, it's set to "All," which means all duplicate reads will be marked.
 - ASSUME_SORT_ORDER coordinate: Assumes that the input BAM file is sorted in coordinate order. It is important to correctly specify the sorting order to ensure accurate duplicate marking.
 
-### Cleaning the BAM files
-The SamClean tool of Picard, cleans the provided SAM/BAM, soft-clipping beyond-end-of-reference alignments and setting MAPQ to 0 for unmapped reads.
+### Clean the BAM files - Picard
+The SamClean tool of Picard cleans the provided SAM/BAM files, soft-clipping beyond-end-of-reference alignments and setting MAPQ to 0 for unmapped reads.
 ```
 #------Set relative path--------------------
-OUT=/home/ralvarezv/genome_aligned/clean_bam   #Directory of the bam sorted data
-DEDUP=/home/ralvarezv/genome_aligned/deduplicated   #Directory of the bam output data 
+OUT=/home/ralvarezv/genome_aligned/clean_bam   #Directory where the bam cleaned files will be located (output)
+DEDUP=/home/ralvarezv/genome_aligned/deduplicated   #Directory where the deduplicated bam files are located (input)
 #------Command------------------------------
 cat list.txt | while read a
 do
