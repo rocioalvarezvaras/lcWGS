@@ -109,7 +109,7 @@ Example command:
 `bwa index reference.fasta`
 
 Script:
-```
+``` bash
 #------Set relative path--------------------
 REF=/home/ralvarezv/reference  #Directory where reference genome is located (input)
 #------Command------------------------------
@@ -133,7 +133,7 @@ It is the primary and most commonly used algorithm in BWA for aligning high-qual
 Here is a basic example of how to use bwa mem: `bwa mem reference.fasta reads.fq > aligned_reads.sam` 
 
 Script:
-```
+``` bash
 #------Set relative path--------------------
 REF=/home/ralvarezv/bwa_04  #Directory where reference/indexed genome is located
 OUT=/home/ralvarezv/genome_aligned  #Directory where output files will be located (output)
@@ -158,7 +158,7 @@ The samtools view command converts between SAM and BAM formats.
 SAM is a human-readable text format, while BAM is a binary version that is more compact and faster to process.
 
 Script:
-```
+``` bash
 #------Set relative path--------------------
 SAM=/home/ralvarezv/genome_aligned  #Directory where the sam files are located (input)
 #------Command------------------------------
@@ -181,7 +181,7 @@ These statistics provide information about the number and types of reads in the 
 The output includes details about how many reads are properly paired, how many are singletons, and various other categories.
 
 Script:
-```
+``` bash
 #------Set relative path--------------------
 BAM=/home/ralvarezv/genome_aligned  #Directory where the bam files are located (input)
 METDIR=/home/ralvarezv/genome_aligned/metrics  #Directory where the metric data will be located (output)
@@ -213,7 +213,7 @@ The samtools sort command is used to sort a BAM file according to genomic coordi
 Sorting is a necessary step before many downstream analyses, as it allows for efficient and ordered access to the aligned reads.
 
 Script:
-```
+``` bash
 #------Set relative path--------------------
 SORT=/home/ralvarezv/genome_aligned/sorted   #Directory where the bam sorted files will be located (output)
 BAM=/home/ralvarezv/genome_aligned/metrics   #Directory where the bam files are located (input)
@@ -233,7 +233,7 @@ This index allows for efficient retrieval of sequences from specific genomic reg
 The index file created by samtools faidx has the extension ".fai."
 
 Command:
-```
+``` bash
 samtools faidx GCF_015237465.2_rCheMyd1.pri.v2_genomic.fna
 ```
 
@@ -246,7 +246,7 @@ These duplicates can arise during library preparation or sequencing and may impa
 The metrics file (metrics.txt) provides information about the number and types of duplicates found during the process.
 
 Script:
-```
+``` bash
 #------Set relative path--------------------
 SORT=/home/ralvarezv/genome_aligned/sorted   #Directory where the bam sorted files are located (input)
 DEDUP=/home/ralvarezv/genome_aligned/deduplicated   #Directory where the bam output (deduplicated) files will be located (output)
@@ -268,7 +268,7 @@ Details:
 
 ### 6b: Clean the BAM files - Picard
 The SamClean tool of Picard cleans the provided SAM/BAM files, soft-clipping beyond-end-of-reference alignments and setting MAPQ to 0 for unmapped reads.
-```
+``` bash
 #------Set relative path--------------------
 OUT=/home/ralvarezv/genome_aligned/clean_bam   #Directory where the bam cleaned files will be located (output)
 DEDUP=/home/ralvarezv/genome_aligned/deduplicated   #Directory where the deduplicated bam files are located (input)
